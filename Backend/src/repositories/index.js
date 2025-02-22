@@ -1,6 +1,10 @@
-const userRepository = require("./userRepository.js");
+const userRepository = require("./userRepositories/userRepository");
+const categoryRepository = require("./productRepositories/categoryRepository");
+const productRepository = require("./productRepositories/productRepository")
 
 module.exports = {
-  userRepository
+  userRepository,
+  categoryRepository,
+  productRepository
 };
     

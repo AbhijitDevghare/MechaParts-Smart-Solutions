@@ -1,7 +1,7 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 const JWT = require("jsonwebtoken");
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt'); 
 
 const UserSchema = new mongoose.Schema({
   avatar: {
@@ -18,21 +18,25 @@ const UserSchema = new mongoose.Schema({
   username: {
     type: String,
     required: [true, "Username required"],
-    unique: [true, "Username not available"],
+    unique: true,
     maxLength: [20, "Username should not exceed 20 characters"],
     trim: true
   },
   email: {
     type: String,
     required: [true, "Email required"],
-    unique: [true, "Already registered"],
+    unique: true,
     lowercase: true,
     trim: true
   },
   phoneNumber: {
     type: String,
-    required: true
-  },
+    required: true,
+    trim: true,
+    match: [/^\+?[1-9]\d{7,14}$/, "Invalid phone number format"], // Ensures valid phone format
+    maxLength: 15
+  }
+  ,
   address:{
     type:String,
     required:true
@@ -53,7 +57,7 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: "user"
+    default:"user"
   },
   resetPasswordToken: String,
   resetPasswordExpires: Date,

@@ -1,9 +1,17 @@
-const User = require("../models/userSchema");
+const User = require("../../models/userSchemas/userSchema");
+const Admin = require("../../models/userSchemas/adminSchema")
+const mongoose = require("mongoose")
 
 class UserRepository {
   
   async findByEmail(email) {
     return await User.findOne({ email }).select('+password');
+  }
+
+  async findAdmin(userId)
+  {
+    const admin = await Admin.findOne({ user: new mongoose.Types.ObjectId(userId) });
+    return admin;
   }
 
   async findByUsername(username) {

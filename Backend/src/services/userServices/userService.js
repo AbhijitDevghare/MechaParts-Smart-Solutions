@@ -1,19 +1,20 @@
 const bcrypt = require("bcrypt");
 const emailValidator = require("email-validator");
-const AppError = require("../utils/error.utils.js");
-const userRepository = require("../repositories/userRepository.js");
-const { uploadOnCloudinary } = require("../middleware/cloudinary.js");
-const sendEmail = require("../utils/sendemail.js");
-const generateOtp = require("../utils/generateOtp.js");
-const sendSms = require("../utils/sendSms.js");
+const AppError = require("../../utils/error.utils.js");
+const {userRepository} = require("../../repositories/index.js");
+const { uploadOnCloudinary } = require("../../middleware/cloudinary.js");
+const sendEmail = require("../../utils/sendemail.js");
+const generateOtp = require("../../utils/generateOtp.js");
+const sendSms = require("../../utils/sendSms.js");
 const crypto = require("crypto");
+
 
 class UserService {
 
 
   async getUserById(findById)
   {
-    const user = await userRepository.findById(findById)
+    let user = await userRepository.findById(findById)
     if(!user)
     {
       throw new AppError("User not found", 400);
@@ -22,6 +23,7 @@ class UserService {
     user.password=undefined;
     return user;
   }
+
   
   async registerUser(data, file) {
     let { name, username, email, phoneNumber, password, confirmPassword, address, pincode, state } = data;
@@ -48,36 +50,40 @@ class UserService {
       throw new AppError("Password and Confirm Password don't match", 400);
     }
 
+    
     let localFilePath = file ? file.path : "default-avatar.jpg";  // Default fallback if no file is provided
     const folderName = "OnlineGroceryStore/userAvatar";
 
     const response = await uploadOnCloudinary(localFilePath, folderName);
     
-    const user = await userRepository.createUser({
+    let user = await userRepository.createUser({
       name, username, email, phoneNumber, password, pincode, address, state,
       avatar: response ? { public_id: response.public_id, url: response.url } : {}
     });
 
+    user.password=undefined
+    
+
     return user;
+
   }
+
 
   async loginUser(identifier, password) {
     if (!identifier || !password) {
       throw new AppError("Identifier (username, email, or phone number) and password are required", 400);
     }
 
-    const user = await userRepository.findByEmail(identifier) || 
+    let user = await userRepository.findByEmail(identifier) || 
                  await userRepository.findByUsername(identifier) ||
                  await userRepository.findByPhoneNumber(identifier);
 
-    console.log(user)
 
     if (!user) {
       throw new AppError("User doesn't exist", 404);
     }
 
     const checkPassword = await bcrypt.compare(password, user.password);
-    console.log(checkPassword);
   
     if (!checkPassword) {
       throw new AppError("Invalid Credentials", 400);
@@ -86,6 +92,7 @@ class UserService {
     
       const token = await user.jwtToken();
       user.password = undefined;
+      
 
       const cookieOptions = {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -93,9 +100,11 @@ class UserService {
         secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
         sameSite: 'Lax' // or 'Strict'
     };
+
       
     return {user,token,cookieOptions};
   }
+
 
   async updateUserProfile(userId, data, file) {
     const user = await userRepository.findById(userId);
@@ -112,6 +121,8 @@ class UserService {
     }
 
     await userRepository.updateUser(user);
+    user = await setUserData(user)
+
     return user;
   }
 

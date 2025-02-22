@@ -5,9 +5,9 @@ const upload = require("../../middleware/multer.js");
 const jwtAuth = require("../../middleware/jwtAuth.js");
 
 // Authentication Routes
-router.post("/register", upload.single("avatar"), userController.register);
-router.post("/login", userController.login);
-router.get("/logout", userController.logout);
+router.post("/auth/register", upload.single("avatar"), userController.register);
+router.post("/auth/login", userController.login);
+router.get("/auth/logout", userController.logout);
 
 // User Profile Routes
 router.put("/profile", jwtAuth, upload.single("avatar"), userController.updateUserProfile);

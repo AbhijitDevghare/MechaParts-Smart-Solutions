@@ -1,4 +1,4 @@
-const {userService} = require("../services/index");
+const {userService} = require("../../services/index");
 
 class UserController {
   // User Registration Controller
@@ -7,6 +7,11 @@ class UserController {
       const user = await userService.registerUser(req.body, req.file);
       res.status(200).json({ success: true, message: "User created successfully...", user });
     } catch (err) {
+
+      if (err.code === 11000) {
+        return next(new AppError("User already Exists", 400));
+      }
+      
       next(err);
     }
   }
@@ -19,6 +24,7 @@ class UserController {
       res.cookie("token", token, cookieOptions);
       res.status(200).json({ success: true, message: "Login Successful", user });
     } catch (err) {
+      
       next(err);
     }
   }
